@@ -24,20 +24,26 @@ $balance = $stmt->fetchColumn();
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-<div class="container mt-5">
+<div class="navbar">
+    <div class="navbar-brand">SwiftPay</div>
+    <ul class="navbar-nav">
+        <li><a href="dashboard.php">Dashboard</a></li>
+        <li><a href="php/transfer.php">Transfer</a></li>
+        <li><a href="php/bills.php">Bills</a></li>
+        <li><a href="php/load.php">Load</a></li>
+        <li><a href="php/savings.php">Savings</a></li>
+        <li><a class="text-danger" href="logout.php">Log out</a></li>
+    </ul>
+</div>
+
+<div class="container mt-4">
     <h1 class="mb-4">Welcome, <?= htmlspecialchars($user['Username']) ?></h1>
     <p>Your account ID: <?= $_SESSION['user_id'] ?></p>
     <p>Balance: ₱<?= number_format($balance,2) ?></p>
-    <nav class="nav flex-column">
-        <a class="nav-link" href="deposit.php">Deposit Funds</a>
-        <a class="nav-link" href="settings.php">Settings</a>
-        <a class="nav-link" href="php/transfer.php">Fund Transfer</a>
-        <a class="nav-link" href="php/bills.php">Bills Payment</a>
-        <a class="nav-link" href="php/load.php">Buy Load</a>
-        <a class="nav-link" href="php/savings.php">Savings</a>
-        <a class="nav-link text-danger" href="logout.php">Log out</a>
-    </nav>
-</div>
+    <div class="mt-4">
+        <a class="btn btn-primary me-2" href="deposit.php">Deposit Funds</a>
+        <a class="btn btn-secondary" href="settings.php">Settings</a>
+    </div>
 <script src="js/script.js"></script>
 </body>
 </html>
