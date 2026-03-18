@@ -21,33 +21,26 @@ if (!$sav) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $action = $_POST['action'] ?? 'save';
-    $bucket = $_POST['bucket'] ?? 'travel';
+    $from = $_POST['from'] ?? 'main';
+    $to = $_POST['to'] ?? 'travel';
     $amt = floatval($_POST['amount']);
     $pass = $_POST['passcode'] ?? '';
+
+    $validSources = ['main','travel','tuition','emergency'];
 
     if (!verifyPasscode($userId, $pass)) {
         echo "<p style='color:red'>Invalid passcode</p>";
     } elseif ($amt <= 0) {
         echo "<p style='color:red'>Amount must be greater than 0</p>";
+    } elseif (!in_array($from, $validSources, true) || !in_array($to, $validSources, true)) {
+        echo "<p style='color:red'>Invalid transfer source or destination</p>";
+    } elseif ($from === $to) {
+        echo "<p style='color:red'>Source and destination cannot be the same</p>";
     } else {
-        $field = ($bucket === 'travel' ? 'Travel' : ($bucket === 'tuition' ? 'Tuition' : 'Emergency'));
         try {
             $pdo->beginTransaction();
 
-            if ($action === 'withdraw') {
-                $current = $pdo->prepare("SELECT $field FROM Savings WHERE AccountID = ?");
-                $current->execute([$accId]);
-                $currentValue = floatval($current->fetchColumn());
-
-                if ($currentValue < $amt) {
-                    throw new Exception('Transaction Failed: Not enough savings in ' . $field);
-                }
-
-                $pdo->exec("UPDATE Savings SET $field = $field - $amt WHERE AccountID = $accId");
-                $pdo->exec("UPDATE Accounts SET Balance = Balance + $amt WHERE AccountID = $accId");
-                echo "<p>Moved ₱$amt from $field savings to main wallet.</p>";
-            } else {
+            if ($from === 'main') {
                 $balanceQuery = $pdo->prepare('SELECT Balance FROM Accounts WHERE AccountID = ?');
                 $balanceQuery->execute([$accId]);
                 $mainBalance = floatval($balanceQuery->fetchColumn());
@@ -57,8 +50,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
 
                 $pdo->exec("UPDATE Accounts SET Balance = Balance - $amt WHERE AccountID = $accId");
-                $pdo->exec("UPDATE Savings SET $field = $field + $amt WHERE AccountID = $accId");
-                echo "<p>Added ₱$amt to $field savings.</p>";
+                $toField = ucfirst($to);
+                $pdo->exec("UPDATE Savings SET $toField = $toField + $amt WHERE AccountID = $accId");
+                echo "<p>Transferred ₱$amt from main wallet to $toField savings.</p>";
+            } elseif ($to === 'main') {
+                $fromField = ucfirst($from);
+                $fromQuery = $pdo->prepare("SELECT $fromField FROM Savings WHERE AccountID = ?");
+                $fromQuery->execute([$accId]);
+                $fromBalance = floatval($fromQuery->fetchColumn());
+
+                if ($fromBalance < $amt) {
+                    throw new Exception('Transaction Failed: Insufficient funds in ' . $fromField . ' savings');
+                }
+
+                $pdo->exec("UPDATE Savings SET $fromField = $fromField - $amt WHERE AccountID = $accId");
+                $pdo->exec("UPDATE Accounts SET Balance = Balance + $amt WHERE AccountID = $accId");
+                echo "<p>Transferred ₱$amt from $fromField savings to main wallet.</p>";
+            } else {
+                $fromField = ucfirst($from);
+                $toField = ucfirst($to);
+                $fromQuery = $pdo->prepare("SELECT $fromField FROM Savings WHERE AccountID = ?");
+                $fromQuery->execute([$accId]);
+                $fromBalance = floatval($fromQuery->fetchColumn());
+
+                if ($fromBalance < $amt) {
+                    throw new Exception('Transaction Failed: Insufficient funds in ' . $fromField . ' savings');
+                }
+
+                $pdo->exec("UPDATE Savings SET $fromField = $fromField - $amt, $toField = $toField + $amt WHERE AccountID = $accId");
+                echo "<p>Transferred ₱$amt from $fromField savings to $toField savings.</p>";
             }
 
             $pdo->commit();
@@ -89,28 +109,31 @@ $mainBalance = $pdo->query("SELECT Balance FROM Accounts WHERE AccountID=$accId"
         <li class="list-group-item">Tuition: ₱<?= number_format($sav['Tuition'],2) ?></li>
         <li class="list-group-item">Emergency: ₱<?= number_format($sav['Emergency'],2) ?></li>
     </ul>
-    <h3>Allocate funds</h3>
+    <h3>Transfer funds</h3>
     <form method="post" data-require-pass="true">
         <div class="mb-3">
-            <label class="form-label" for="action">Action</label>
-            <select class="form-select" id="action" name="action">
-                <option value="save">Add to savings (main → bucket)</option>
-                <option value="withdraw">Withdraw to main wallet (bucket → main)</option>
+            <label class="form-label" for="from">From</label>
+            <select class="form-select" id="from" name="from">
+                <option value="main">Main wallet</option>
+                <option value="travel">Savings: Travel</option>
+                <option value="tuition">Savings: Tuition</option>
+                <option value="emergency">Savings: Emergency</option>
             </select>
         </div>
         <div class="mb-3">
-            <label class="form-label" for="bucket">Savings bucket</label>
-            <select class="form-select" id="bucket" name="bucket">
-                <option value="travel">Travel</option>
-                <option value="tuition">Tuition</option>
-                <option value="emergency">Emergency</option>
+            <label class="form-label" for="to">To</label>
+            <select class="form-select" id="to" name="to">
+                <option value="main">Main wallet</option>
+                <option value="travel">Savings: Travel</option>
+                <option value="tuition">Savings: Tuition</option>
+                <option value="emergency">Savings: Emergency</option>
             </select>
         </div>
         <div class="mb-3">
             <label class="form-label" for="amount">Amount</label>
             <input class="form-control" type="number" step="0.01" name="amount" id="amount" required>
         </div>
-        <button class="btn btn-success" type="submit">Submit</button>
+        <button class="btn btn-success" type="submit">Transfer</button>
         <a href="../dashboard.php" class="btn btn-link">Back</a>
     </form>
 </div>
