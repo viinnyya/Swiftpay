@@ -16,20 +16,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!verifyPasscode($userId, $pass)) {
         echo "<p style='color:red'>Invalid passcode</p>";
     } else {
-        // subtract from user balance and log transaction to the biller account
+        // subtract from user balance and credit biller account
         try {
             $pdo->beginTransaction();
-            // deduct from user
-            $stmt = $pdo->prepare('UPDATE Accounts SET Balance=Balance-? WHERE UserID=?');
-            $stmt->execute([$amount,$userId]);
-            $accId = $pdo->query('SELECT AccountID FROM Accounts WHERE UserID='.$userId)->fetchColumn();
-            // find biller account
-            $stmt2 = $pdo->prepare('SELECT AccountID FROM Billers WHERE BillerID = ?');
-            $stmt2->execute([$biller]);
-            $rid = $stmt2->fetchColumn();
-            // log transaction involving real receiver
-            $stmt = $pdo->prepare('INSERT INTO TransactionLogs (SenderID, ReceiverID, Amount, Timestamp) VALUES (?,?,?,NOW())');
-            $stmt->execute([$accId, $rid, $amount]);
+
+            $userAcc = $pdo->prepare('SELECT AccountID, Balance FROM Accounts WHERE UserID = ?');
+            $userAcc->execute([$userId]);
+            $userRow = $userAcc->fetch();
+            if (!$userRow) {
+                throw new Exception('User account not found');
+            }
+            if ($userRow['Balance'] < $amount) {
+                throw new Exception('Transaction Failed: Insufficient funds');
+            }
+
+            $billerAccStmt = $pdo->prepare('SELECT AccountID FROM Billers WHERE BillerID = ?');
+            $billerAccStmt->execute([$biller]);
+            $rid = $billerAccStmt->fetchColumn();
+            if (!$rid) {
+                throw new Exception('Biller account not found');
+            }
+
+            // update balances
+            $stmt1 = $pdo->prepare('UPDATE Accounts SET Balance = Balance - ? WHERE AccountID = ?');
+            $stmt1->execute([$amount, $userRow['AccountID']]);
+
+            $stmt2 = $pdo->prepare('UPDATE Accounts SET Balance = Balance + ? WHERE AccountID = ?');
+            $stmt2->execute([$amount, $rid]);
+
+            $stmt3 = $pdo->prepare('INSERT INTO TransactionLogs (SenderID, ReceiverID, Amount, Timestamp) VALUES (?,?,?,NOW())');
+            $stmt3->execute([$userRow['AccountID'], $rid, $amount]);
+
             $pdo->commit();
             echo "<p>Bills payment successful</p>";
         } catch (Exception $e) {

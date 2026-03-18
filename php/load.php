@@ -15,20 +15,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!verifyPasscode($userId, $pass)) {
         echo "<p style='color:red'>Invalid passcode</p>";
     } else {
-        // similar to bills: deduct cost and log as transaction
-        $stmt = $pdo->prepare('SELECT Cost, Network, Description FROM LoadPlans WHERE PlanID = ?');
+        // similar to bills: deduct cost and credit provider account
+        $stmt = $pdo->prepare('SELECT Cost, Network, Description, AccountID FROM LoadPlans WHERE PlanID = ?');
         $stmt->execute([$plan]);
         $info = $stmt->fetch();
         if ($info) {
             try {
                 $pdo->beginTransaction();
-                $pdo->exec('UPDATE Accounts SET Balance = Balance - ' . $info['Cost'] . ' WHERE UserID = ' . $userId);
-                $accId = $pdo->query('SELECT AccountID FROM Accounts WHERE USERID='.$userId)->fetchColumn();
-                // get provider account
-                $stmtp = $pdo->prepare('SELECT AccountID FROM LoadPlans WHERE PlanID = ?');
-                $stmtp->execute([$plan]);
-                $rid = $stmtp->fetchColumn();
-                $pdo->exec("INSERT INTO TransactionLogs (SenderID, ReceiverID, Amount, Timestamp) VALUES ($accId,$rid,{$info['Cost']},NOW())");
+
+                $userAcc = $pdo->prepare('SELECT AccountID, Balance FROM Accounts WHERE UserID = ?');
+                $userAcc->execute([$userId]);
+                $userRow = $userAcc->fetch();
+                if (!$userRow) {
+                    throw new Exception('User account not found');
+                }
+                if ($userRow['Balance'] < $info['Cost']) {
+                    throw new Exception('Transaction Failed: Insufficient funds');
+                }
+
+                $providerAccId = $info['AccountID'];
+                if (!$providerAccId) {
+                    throw new Exception('Provider account not configured');
+                }
+
+                $stmt1 = $pdo->prepare('UPDATE Accounts SET Balance = Balance - ? WHERE AccountID = ?');
+                $stmt1->execute([$info['Cost'], $userRow['AccountID']]);
+
+                $stmt2 = $pdo->prepare('UPDATE Accounts SET Balance = Balance + ? WHERE AccountID = ?');
+                $stmt2->execute([$info['Cost'], $providerAccId]);
+
+                $stmt3 = $pdo->prepare('INSERT INTO TransactionLogs (SenderID, ReceiverID, Amount, Timestamp) VALUES (?,?,?,NOW())');
+                $stmt3->execute([$userRow['AccountID'], $providerAccId, $info['Cost']]);
+
                 $pdo->commit();
                 echo "<p>Purchased {$info['Description']} ({$info['Network']})</p>";
             } catch (Exception $e) {
