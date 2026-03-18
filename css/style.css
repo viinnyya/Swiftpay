@@ -1,47 +1,128 @@
 body {
-    font-family: Arial, sans-serif;
+    font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     margin: 0;
-    background: #eef2f7;
+    background: linear-gradient(165deg, #f0f4fc 0%, #e9effa 45%, #dfe8f8 100%);
+    color: #1b2a46;
+}
+
+* {
+    box-sizing: border-box;
 }
 
 .container {
-    padding: 20px;
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    margin: 30px auto;
+    padding: 28px;
+    background: #ffffff;
+    border-radius: 18px;
+    box-shadow: 0 18px 34px rgba(15, 26, 60, 0.12);
+    border: 1px solid rgba(138, 163, 202, 0.2);
+    max-width: 760px;
+    min-width: 280px;
 }
 
-nav ul {
-    list-style: none;
-    padding: 0;
-}
-nav li {
-    margin: 5px 0;
-}
-nav a {
-    text-decoration: none;
-    color: #0066cc;
+h2 {
+    color: #0d2047;
+    margin-bottom: 16px;
+    font-size: 1.9rem;
+    font-weight: 700;
 }
 
-form label {
-    display: block;
-    margin: 8px 0 4px;
+p, label, .list-group-item {
+    font-size: 1rem;
+    line-height: 1.5;
 }
 
-form input, form select {
-    padding: 6px;
-    width: 200px;
+ul.list-group {
+    border: 1px solid #ebf0f8;
+    border-radius: 12px;
+    overflow: hidden;
 }
 
-button {
-    padding: 8px 12px;
-    background-color: #28a745;
-    color: white;
+li.list-group-item {
     border: none;
-    cursor: pointer;
+    background: #f8fbff;
+    color: #1e3151;
+    font-weight: 600;
 }
 
-button:disabled {
-    background-color: #ccc;
+label {
+    font-weight: 600;
+    color: #2a3d61;
+}
+
+form select,
+form input,
+.form-control {
+    width: 100%;
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1px solid #cdd9ee;
+    background: #f7faff;
+    color: #223354;
+    font-size: 0.975rem;
+    transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+form select:focus,
+form input:focus,
+.form-control:focus {
+    outline: none;
+    border-color: #5489f5;
+    box-shadow: 0 0 0 4px rgba(84, 137, 245, 0.18);
+}
+
+.button, button, .btn {
+    border: none;
+    border-radius: 10px;
+    color: #ffffff;
+    background: linear-gradient(135deg, #2c7cf7 0%, #0f92e7 100%);
+    padding: 10px 18px;
+    font-weight: 700;
+    box-shadow: 0 8px 15px rgba(29, 101, 218, 0.25);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.3s ease;
+}
+
+button:hover,
+.btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 12px 22px rgba(29, 101, 218, 0.3);
+}
+
+button:active,
+.btn:active {
+    transform: translateY(0);
+    box-shadow: 0 8px 12px rgba(29, 101, 218, 0.2);
+}
+
+button:disabled,
+.btn:disabled {
+    background: #99b8e5;
     cursor: not-allowed;
+    box-shadow: none;
+}
+
+a.btn-link,
+nav a {
+    color: #1a69c8;
+}
+
+a.btn-link:hover,
+nav a:hover {
+    color: #1450a8;
+    text-decoration: underline;
+}
+
+.alert {
+    background: #e5f0ff;
+    border-left: 4px solid #2e7fe9;
+    color: #1a3a6b;
+    border-radius: 8px;
+    margin: 12px 0;
+    padding: 10px 14px;
+}
+
+@media (max-width: 700px) {
+    .container { padding: 18px; margin: 16px; }
+    h2 { font-size: 1.6rem; }
+    .form-control, form select, form input { font-size: 0.95rem; }
 }
