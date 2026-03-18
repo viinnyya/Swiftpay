@@ -122,9 +122,21 @@ button:disabled,
 .navbar-nav {
     list-style: none;
     display: flex;
+    flex-direction: row;
     gap: 14px;
     margin: 0;
     padding: 0;
+    align-items: center;
+}
+.navbar-nav li {
+    display: inline-flex;
+}
+.navbar-nav a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 12px;
+    border-radius: 8px;
 }
 
 .navbar-nav a {
