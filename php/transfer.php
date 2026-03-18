@@ -18,10 +18,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!verifyPasscode($userId, $pass)) {
         echo "<p style='color:red'>Invalid passcode</p>";
     } else {
-        $stmt = $pdo->prepare('CALL ProcessTransferWithSafety(?,?,?,@msg)');
-        $stmt->execute([$userId, $receiver, $amount]);
-        $msg = $pdo->query('SELECT @msg')->fetchColumn();
-        echo "<p>$msg</p>";
+        $senderAccountId = $pdo->prepare('SELECT AccountID FROM Accounts WHERE UserID = ?');
+        $senderAccountId->execute([$userId]);
+        $sender = intval($senderAccountId->fetchColumn());
+
+        if ($sender <= 0) {
+            echo "<p style='color:red'>Sender account not found</p>";
+        } elseif ($receiver <= 0) {
+            echo "<p style='color:red'>Invalid recipient account ID</p>";
+        } elseif ($receiver === $sender) {
+            echo "<p style='color:red'>Cannot transfer to your own account</p>";
+        } else {
+            $checkReceiver = $pdo->prepare('SELECT COUNT(*) FROM Accounts WHERE AccountID = ?');
+            $checkReceiver->execute([$receiver]);
+            if (intval($checkReceiver->fetchColumn()) === 0) {
+                echo "<p style='color:red'>Recipient account not found</p>";
+            } else {
+                try {
+                    $stmt = $pdo->prepare('CALL ProcessTransferWithSafety(?,?,?,@msg)');
+                    $stmt->execute([$sender, $receiver, $amount]);
+                    $msg = $pdo->query('SELECT @msg')->fetchColumn();
+                    echo "<p>$msg</p>";
+                } catch (Exception $e) {
+                    echo "<p style='color:red'>" . $e->getMessage() . "</p>";
+                }
+            }
+        }
     }
 }
 
