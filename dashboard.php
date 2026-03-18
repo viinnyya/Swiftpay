@@ -24,17 +24,7 @@ $balance = $stmt->fetchColumn();
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-<div class="navbar">
-    <div class="navbar-brand">SwiftPay</div>
-    <ul class="navbar-nav">
-        <li><a href="dashboard.php">Dashboard</a></li>
-        <li><a href="php/transfer.php">Transfer</a></li>
-        <li><a href="php/bills.php">Bills</a></li>
-        <li><a href="php/load.php">Load</a></li>
-        <li><a href="php/savings.php">Savings</a></li>
-        <li><a class="text-danger" href="logout.php">Log out</a></li>
-    </ul>
-</div>
+<?php include_once 'php/navbar.php'; ?>
 
 <div class="container mt-4">
     <h1 class="mb-4">Welcome, <?= htmlspecialchars($user['Username']) ?></h1>

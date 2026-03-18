@@ -65,6 +65,7 @@ $billers = $pdo->query('SELECT BillerID, Name FROM Billers')->fetchAll();
     <link rel="stylesheet" href="../css/style.css">
     <title>Bills Payment</title>
 </head><body>
+<?php include_once '../php/navbar.php'; ?>
 <div class="container mt-5" style="max-width:500px;">
     <h2>Bills Payment</h2>
     <form method="post" data-require-pass="true">

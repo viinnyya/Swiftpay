@@ -57,6 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <title>Fund Transfer</title>
 </head>
 <body>
+<?php include_once '../php/navbar.php'; ?>
 <div class="container mt-5" style="max-width:500px;">
     <h2>Fund Transfer</h2>
     <form method="post" data-require-pass="true">

@@ -100,6 +100,7 @@ $mainBalance = $pdo->query("SELECT Balance FROM Accounts WHERE AccountID=$accId"
     <link rel="stylesheet" href="../css/style.css">
     <title>Savings</title>
 </head><body>
+<?php include_once '../php/navbar.php'; ?>
 <div class="container mt-5" style="max-width:600px;">
     <h2>Savings</h2>
     <p>Main wallet balance: ₱<?= number_format($mainBalance,2) ?></p>

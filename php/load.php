@@ -65,6 +65,7 @@ $plans = $pdo->query('SELECT PlanID, Network, Cost, Description FROM LoadPlans')
     <link rel="stylesheet" href="../css/style.css">
     <title>Buy Load</title>
 </head><body>
+<?php include_once '../php/navbar.php'; ?>
 <div class="container mt-5" style="max-width:500px;">
     <h2>Buy Load</h2>
     <form method="post" data-require-pass="true">

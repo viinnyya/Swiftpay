@@ -28,6 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+<?php include_once 'php/navbar.php'; ?>
 <div class="container mt-5" style="max-width:400px;">
     <h2>Register</h2>
     <?php if ($error): ?>

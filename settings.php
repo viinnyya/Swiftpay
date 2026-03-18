@@ -47,6 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <title>Settings</title>
 </head>
 <body>
+<?php include_once 'php/navbar.php'; ?>
 <div class="container mt-5" style="max-width:600px;">
     <h2>Account Settings</h2>
     <?= $message ?>

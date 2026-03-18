@@ -1,3 +1,8 @@
+<?php
+session_start();
+require_once 'php/config.php';
+require_once 'php/auth.php';
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,6 +12,7 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+<?php include_once 'php/navbar.php'; ?>
 <div class="container text-center mt-5">
     <h1 class="mb-4">SwiftPay</h1>
     <p class="lead">Your simple web banking platform</p>
