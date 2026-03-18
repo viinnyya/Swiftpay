@@ -9,10 +9,12 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 $user = getUserById($_SESSION['user_id']);
-// fetch balance
-$stmt = $pdo->prepare('SELECT Balance FROM Accounts WHERE UserID = ?');
+// fetch account and balance
+$stmt = $pdo->prepare('SELECT AccountID, Balance FROM Accounts WHERE UserID = ?');
 $stmt->execute([$_SESSION['user_id']]);
-$balance = $stmt->fetchColumn();
+$accountData = $stmt->fetch();
+$balance = $accountData ? $accountData['Balance'] : 0;
+$accountId = $accountData ? $accountData['AccountID'] : null;
 
 ?>
 <!DOCTYPE html>
@@ -28,7 +30,7 @@ $balance = $stmt->fetchColumn();
 
 <div class="container mt-4">
     <h1 class="mb-4">Welcome, <?= htmlspecialchars($user['Username']) ?></h1>
-    <p>Your account ID: <?= $_SESSION['user_id'] ?></p>
+    <p>Your account ID: <?= $accountId ? htmlspecialchars($accountId) : 'Not found' ?></p>
     <p>Balance: ₱<?= number_format($balance,2) ?></p>
     <div class="mt-4">
         <a class="btn btn-primary me-2" href="deposit.php">Deposit Funds</a>
